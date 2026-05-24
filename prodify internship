@@ -1,0 +1,75 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+
+np.random.seed(42)
+n = 1000
+
+ages = np.concatenate([
+    np.random.normal(25, 4, 300),
+    np.random.normal(35, 5, 400),
+    np.random.normal(50, 7, 300)
+]).clip(1, 90).astype(int)
+
+genders = np.random.choice(['Male', 'Female', 'Non-binary'], size=n, p=[0.48, 0.48, 0.04])
+
+df = pd.DataFrame({'Age': ages, 'Gender': genders})
+
+fig = plt.figure(figsize=(14, 6), facecolor='#0f0f1a')
+gs = GridSpec(1, 2, figure=fig, wspace=0.35)
+
+colors_hist = ['#7c6af7', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe',
+               '#e0e7ff', '#bfdbfe', '#93c5fd', '#60a5fa']
+
+ax1 = fig.add_subplot(gs[0])
+ax1.set_facecolor('#1a1a2e')
+n_bins = 9
+counts, bin_edges = np.histogram(df['Age'], bins=n_bins)
+for i in range(n_bins):
+    ax1.bar(bin_edges[i], counts[i], width=bin_edges[i+1]-bin_edges[i]-0.5,
+            align='edge', color=colors_hist[i], edgecolor='#0f0f1a', linewidth=0.8, alpha=0.92)
+
+ax1.set_title('Age Distribution', color='white', fontsize=15, fontweight='bold', pad=14)
+ax1.set_xlabel('Age', color='#a0a0c0', fontsize=11)
+ax1.set_ylabel('Count', color='#a0a0c0', fontsize=11)
+ax1.tick_params(colors='#a0a0c0')
+for spine in ax1.spines.values():
+    spine.set_edgecolor('#2a2a4a')
+ax1.yaxis.grid(True, color='#2a2a4a', linestyle='--', alpha=0.5)
+ax1.set_axisbelow(True)
+
+mean_age = df['Age'].mean()
+ax1.axvline(mean_age, color='#f59e0b', linestyle='--', linewidth=1.5, label=f'Mean: {mean_age:.1f}')
+ax1.legend(facecolor='#1a1a2e', edgecolor='#3a3a5a', labelcolor='white', fontsize=10)
+
+gender_counts = df['Gender'].value_counts()
+bar_colors = ['#7c6af7', '#f472b6', '#34d399']
+ax2 = fig.add_subplot(gs[1])
+ax2.set_facecolor('#1a1a2e')
+bars = ax2.bar(gender_counts.index, gender_counts.values,
+               color=bar_colors[:len(gender_counts)], edgecolor='#0f0f1a',
+               linewidth=0.8, width=0.5, alpha=0.92)
+
+for bar, val in zip(bars, gender_counts.values):
+    ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 8,
+             f'{val}\n({val/n*100:.1f}%)', ha='center', va='bottom',
+             color='white', fontsize=10, fontweight='bold')
+
+ax2.set_title('Gender Distribution', color='white', fontsize=15, fontweight='bold', pad=14)
+ax2.set_xlabel('Gender', color='#a0a0c0', fontsize=11)
+ax2.set_ylabel('Count', color='#a0a0c0', fontsize=11)
+ax2.tick_params(colors='#a0a0c0')
+for spine in ax2.spines.values():
+    spine.set_edgecolor('#2a2a4a')
+ax2.yaxis.grid(True, color='#2a2a4a', linestyle='--', alpha=0.5)
+ax2.set_axisbelow(True)
+ax2.set_ylim(0, max(gender_counts.values) * 1.18)
+
+fig.suptitle('Population Distribution Analysis', color='white',
+             fontsize=18, fontweight='bold', y=1.02)
+fig.text(0.5, -0.03, 'Prodigy InfoTech — Data Science Internship | Task 01',
+         ha='center', color='#6060a0', fontsize=10)
+
+plt.savefig('prodigy_ds_task01.png', dpi=180, bbox_inches='tight', facecolor='#0f0f1a')
+plt.show()
